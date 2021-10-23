@@ -1,6 +1,12 @@
 #ifndef _BITMAP_H_
 #  define _BITMAP_H_
 
+typedef struct
+{
+        unsigned char R;
+        unsigned char G;
+        unsigned char B;      
+}PIXEL;
 
 typedef struct                       /**** BMP file header structure ****/
     {

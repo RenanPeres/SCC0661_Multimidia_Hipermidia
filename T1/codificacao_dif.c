@@ -51,8 +51,6 @@ int main(int argc, char *argv[])
   Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));
   
   loadBMPImage(input, InfoHeader, Image);
-      
-  TonsCinza(Image, (InfoHeader.Width * InfoHeader.Height), input);
                                
 
   if(!(output = fopen("out.bin", "wb"))){
