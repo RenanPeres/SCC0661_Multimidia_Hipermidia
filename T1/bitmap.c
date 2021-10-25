@@ -82,24 +82,3 @@ void printHeaders (BITMAPFILEHEADER *FileHeader,  BITMAPINFOHEADER *InfoHeader)
      system("pause");
   
 }
-
-void printBit(char *bitstream, FILE *out)
-{
-    unsigned char buffer = 0; /* ocupa um byte de espaço de memória*/
-    int i;
-  
-    
-     /*===> AQUI <======
-      Código para transferir o conteúdo do bitstream para um byte, no caso, para 
-      a variável buffer.
-     */
-       
-       
-    printf("\n%d", buffer);
-
-    out = fopen("out.bin","wb"); /* grava o bitstream como bits -> 8 bits*/
-    fwrite(&buffer,1,sizeof(buffer), out);
-    fclose(out);
-    
-    printf("\n");
-}

@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
            fputc(fgetc(input), output);
   fclose(input);
 
-  printf("Defina o método de compressao:\n\n");
+  printf("\nDefina o método de compressao:\n\n");
   printf("Sem perdas (Compressao por diferença + Huffman) -> 1\n");
   printf("Com perdas (DCT + Quantização) -> 2\n");
   printf("Encerrar compressor -> 0\n\n");
@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
     //  cod_dif();
       break;
     }else if(modo == '2'){
-    //  cod_dct();
+    //  cod_jpeg();
     }else if(modo =='0') break;
     else printf("Opção inválida! Tente novamente!");
   }

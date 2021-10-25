@@ -13,8 +13,9 @@ typedef struct
 
 typedef struct 
 {
-  unsigned int codigo;
-  unsigned char tamanho;
+        int valor;
+        unsigned int codigo;
+        unsigned char tamanho;
   
 }TABELA;
 
@@ -29,7 +30,7 @@ void GravaBit(TABELA *TabCodigos, int tam, FILE *p);
 void TonsCinza(PIXEL *Image, int tam, FILE *input);
 
        
-int main(int argc, char *argv[])
+int cod_dif()
 {
   FILE *input, *cinza, *output;
   int i;
@@ -41,11 +42,6 @@ int main(int argc, char *argv[])
   PIXEL *Image;
   TABELA *TabCodigos;
          
-  if(!(input = fopen(argv[1], "rb"))){
-          printf("Error: could not open input file." );
-          exit(1);
-  }
-  
   loadBMPHeaders (input, &FileHeader, &InfoHeader);
   
   Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));
@@ -105,27 +101,38 @@ void TonsCinza(PIXEL *Image, int tam, FILE *input)
 }
 
 TABELA *CodDiferencial(PIXEL *Image, int altura, int largura){
- 
+        int tam = altura * largura;
+        
+
+        Image[0].R =;
+        for (int i=0;i< tam; i++){
+                Image[i].R = ;
+  }
  
 }
 
-void GravaBit(TABELA *TabCodigos, int tam, FILE *p){
+void write_huffman(TABELA *TabCodigos, int tam, FILE *p)
+{
  
 }
 
+void printBit(char *bitstream, FILE *out)
+{
+    unsigned char buffer = 0; /* ocupa um byte de espaço de memória*/
+    int i;
+  
+    
+     /*===> AQUI <======
+      Código para transferir o conteúdo do bitstream para um byte, no caso, para 
+      a variável buffer.
+     */
+       
+       
+    printf("\n%d", buffer);
 
-
-void loadBMPImage(FILE *input, BITMAPINFOHEADER InfoHeader, PIXEL *Image){
-   int i, j, tam;
-   
-   tam = InfoHeader.Height * InfoHeader.Width;
-   fseek(input, 54, SEEK_SET); //skipping the header (54 bytes)
-   
-   for (i=0; i < tam; i++){
-      
-       Image[i].B = fgetc(input);
-       Image[i].G = fgetc(input);
-       Image[i].R = fgetc(input);
-   }
-
+    out = fopen("out.bin","wb"); /* grava o bitstream como bits -> 8 bits*/
+    fwrite(&buffer,1,sizeof(buffer), out);
+    fclose(out);
+    
+    printf("\n");
 }
