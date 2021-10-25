@@ -40,6 +40,7 @@ void loadBMPHeaders (FILE *fp, BITMAPFILEHEADER *FileHeader,  BITMAPINFOHEADER *
 void printHeaders (BITMAPFILEHEADER *FileHeader,  BITMAPINFOHEADER *InfoHeader);
 void leituraInfoHeader(FILE *F, BITMAPINFOHEADER *INFO_H);
 void leituraHeader(FILE *F, BITMAPFILEHEADER *H);
+void loadBMPImage(FILE *input, BITMAPINFOHEADER InfoHeader, PIXEL *Image);
 
 
 #endif

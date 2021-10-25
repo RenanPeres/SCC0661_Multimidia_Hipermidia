@@ -41,6 +41,21 @@ void leituraInfoHeader(FILE *F, BITMAPINFOHEADER *INFO_H){
      fread(&INFO_H->ImportantColours,sizeof (unsigned int),1,F);        
 }
 
+void loadBMPImage(FILE *input, BITMAPINFOHEADER InfoHeader, PIXEL *Image){
+   int i, j, tam;
+   
+   tam = InfoHeader.Height * InfoHeader.Width;
+   fseek(input, 54, SEEK_SET); //skipping the header (54 bytes)
+   
+   for (i=0; i < tam; i++){
+      
+       Image[i].B = fgetc(input);
+       Image[i].G = fgetc(input);
+       Image[i].R = fgetc(input);
+   }
+
+}
+
 void printHeaders (BITMAPFILEHEADER *FileHeader,  BITMAPINFOHEADER *InfoHeader)
 {
      /*system("cls");*/

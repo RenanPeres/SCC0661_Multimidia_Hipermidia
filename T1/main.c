@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
   PIXEL *Image;
          
   if(!(input = fopen(argv[1], "rb"))){
-          printf("Error: could not open input file." );
+          printf("Error: could not open input file.\n" );
           exit(1);
   }
   
@@ -39,14 +39,15 @@ int main(int argc, char *argv[])
   printf("Defina o método de compressao:\n\n");
   printf("Sem perdas (Compressao por diferença + Huffman) -> 1\n");
   printf("Com perdas (DCT + Quantização) -> 2\n");
-  printf("Encerrar compressor -> 0\n");
+  printf("Encerrar compressor -> 0\n\n");
   while(1){
+    printf("Sua escolha: ");
     modo = getc(stdin);
     if(modo == '1'){ 
-      cod_dif();
+    //  cod_dif();
       break;
     }else if(modo == '2'){
-      cod_dct();
+    //  cod_dct();
     }else if(modo =='0') break;
     else printf("Opção inválida! Tente novamente!");
   }
