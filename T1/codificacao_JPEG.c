@@ -7,7 +7,8 @@ void dct(int* matrix);
 void idct(int* matrix);
 void quant(int* matrix, int fator);
 void iquant(int* matrix, int fator);
-void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader);
+void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados);
+void decod_JPEG(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados);
 
 
 float DCT_Matrix[8][8]  = {{0.354, 0.354, 0.354, 0.354, 0.354, 0.354, 0.354, 0.354},
@@ -50,7 +51,7 @@ int main(int argc, char *argv[])
   BITMAPFILEHEADER FileHeader;       /* File header */
   BITMAPINFOHEADER InfoHeader;       /* Info header */
   PIXEL *Image;
-         
+  
   if(!(input = fopen(argv[1], "rb"))){
           printf("Error: could not open input file.\n" );
           exit(1);
@@ -63,30 +64,36 @@ int main(int argc, char *argv[])
   loadBMPImage(input, InfoHeader, Image);
                                
 
-  if(!(output = fopen("out.bin", "wb"))){
-          printf("Error: could not open ""out.bin"" file." );
-          exit(1);
+  if(!(output = fopen("out.bmp", "wb"))){
+            printf("Error: could not open output file." );
+            exit(1);
   }
+
+  int dados[3 * InfoHeader.Height * InfoHeader.Width];
   
   fseek(input, 0, SEEK_SET);
   for(i=0; i<54; i++)
            fputc(fgetc(input), output);
   fclose(input);
 
-  cod_jpeg(Image, InfoHeader);
+  cod_jpeg(Image, InfoHeader, dados);
 
-  decod_JPEG();
+  decod_JPEG(Image, InfoHeader, dados);
+
+  for (i=0; i < (InfoHeader.Height * InfoHeader.Width); i++){
+       fputc(Image[i].B, output);
+       fputc(Image[i].G, output);
+       fputc(Image[i].R, output); 
+    }
 
   fclose(output);
   return 0;
 }
 
-void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader)
+void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados)
 {
   int fator = 1;
-  int tam;
   int matrix[64];
-  int dados[3 * InfoHeader.Height * InfoHeader.Width];
 
   //Para os valores de B
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
@@ -107,13 +114,35 @@ void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader)
     quant(matrix, fator);
     for(int j = 0; j < 64; j++) dados[i + j + (2 * InfoHeader.Height * InfoHeader.Width)] = matrix[ZZ_Matrix[j]];
   }
-
-
   return;
 }
 
-void decod_JPEG()
+void decod_JPEG(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados)
 {
+  int fator = 1;
+  int matrix[64];
+
+
+  //Para os valores de B
+  for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i+j];
+    iquant(matrix, fator);
+    idct(matrix);
+    for(int j = 0; j < 64; j++) Image[i+j].B = matrix[j];
+  }//Para os valores de G
+  for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i + j + (InfoHeader.Height * InfoHeader.Width)];
+    iquant(matrix, fator);
+    idct(matrix);
+    for(int j = 0; j < 64; j++) Image[i+j].G = matrix[j];
+  }//Para os valores de R
+  for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i + j + (2 * InfoHeader.Height * InfoHeader.Width)];
+    iquant(matrix, fator);
+    idct(matrix);
+    for(int j = 0; j < 64; j++) Image[i+j].R = matrix[j];
+  }
+  return;
 
 }
 
