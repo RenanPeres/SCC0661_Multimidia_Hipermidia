@@ -5,8 +5,10 @@
 
 void dct(int* matrix);
 void idct(int* matrix);
-void quant(int* matrix, int fator);
-void iquant(int* matrix, int fator);
+void quant(int* matrix);
+void iquant(int* matrix);
+void cod_diff_JPEG(int* dados, BITMAPINFOHEADER InfoHeader);
+void icod_diff_JPEG(int* dados, BITMAPINFOHEADER InfoHeader);
 void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados);
 void decod_JPEG(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados);
 
@@ -62,15 +64,16 @@ int main(int argc, char *argv[])
   Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));
   
   loadBMPImage(input, InfoHeader, Image);
-                               
+                           
 
   if(!(output = fopen("out.bmp", "wb"))){
             printf("Error: could not open output file." );
             exit(1);
   }
 
-  int dados[3 * InfoHeader.Height * InfoHeader.Width];
-  
+  int *dados;
+  dados = (int*)calloc(3 * InfoHeader.Height * InfoHeader.Width, sizeof(int));
+
   fseek(input, 0, SEEK_SET);
   for(i=0; i<54; i++)
            fputc(fgetc(input), output);
@@ -92,58 +95,58 @@ int main(int argc, char *argv[])
 
 void cod_jpeg(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados)
 {
-  int fator = 1;
   int matrix[64];
 
   //Para os valores de B
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].B;
     dct(matrix);
-    quant(matrix, fator);
+    quant(matrix);
     for(int j = 0; j < 64; j++) dados[i+j] = matrix[ZZ_Matrix[j]];
   }//Para os valores de G
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].G;
     dct(matrix);
-    quant(matrix, fator);
+    quant(matrix);
     for(int j = 0; j < 64; j++) dados[i + j + (InfoHeader.Height * InfoHeader.Width)] = matrix[ZZ_Matrix[j]];
   }//Para os valores de R
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].R;
     dct(matrix);
-    quant(matrix, fator);
+    quant(matrix);
     for(int j = 0; j < 64; j++) dados[i + j + (2 * InfoHeader.Height * InfoHeader.Width)] = matrix[ZZ_Matrix[j]];
-  }
+  }cod_diff_JPEG(dados, InfoHeader);
+
+
   return;
 }
 
 void decod_JPEG(PIXEL *Image, BITMAPINFOHEADER InfoHeader, int* dados)
 {
-  int fator = 1;
   int matrix[64];
 
 
   //Para os valores de B
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i+j];
-    iquant(matrix, fator);
+    iquant(matrix);
     idct(matrix);
     for(int j = 0; j < 64; j++) Image[i+j].B = matrix[j];
   }//Para os valores de G
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i + j + (InfoHeader.Height * InfoHeader.Width)];
-    iquant(matrix, fator);
+    iquant(matrix);
     idct(matrix);
     for(int j = 0; j < 64; j++) Image[i+j].G = matrix[j];
   }//Para os valores de R
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = dados[i + j + (2 * InfoHeader.Height * InfoHeader.Width)];
-    iquant(matrix, fator);
+    iquant(matrix);
     idct(matrix);
     for(int j = 0; j < 64; j++) Image[i+j].R = matrix[j];
-  }
-  return;
+  }icod_diff_JPEG(dados, InfoHeader);
 
+  return;
 }
 
 void dct(int* matrix)
@@ -183,20 +186,86 @@ void idct(int* matrix)
 
 }
 
-void quant(int* matrix, int fator)
+void quant(int* matrix)
 {
   for(int i = 0; i < 8; i++){
     for(int j = 0; j < 8; j++){
-      matrix[i*8+j] = (int)matrix[i*8+j]/(fator * QUANT_Matrix[i][j]);
+      matrix[i*8+j] = (int)matrix[i*8+j]/(QUANT_Matrix[i][j]);
     }
   }
 }
 
-void iquant(int* matrix, int fator)
+void iquant(int* matrix)
 {
   for(int i = 0; i < 8; i++){
     for(int j = 0; j < 8; j++){
-      matrix[i*8+j] *= QUANT_Matrix[i][j] * fator;
+      matrix[i*8+j] *= QUANT_Matrix[i][j];
+    }
+  }
+}
+
+void cod_diff_JPEG(int* dados, BITMAPINFOHEADER InfoHeader)
+{
+  //Utiliza-se um vetor de 3 elementos para fazer as operaçãos de RGB dentro de um mesmo laço
+  int DC[3] = {0,0,0};
+  int AC[3] = {0,0,0};
+  int aux[3] = {0,0,0};
+  for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
+    aux[0] = dados[i];
+    dados[i] -= DC[0];
+    DC[0] = aux[0];
+
+    aux[1] = dados[i + InfoHeader.Height * InfoHeader.Width];
+    dados[i + InfoHeader.Height * InfoHeader.Width] -= DC[1];
+    DC[1] = aux[1];
+
+    aux[2] = dados[i + 2 * InfoHeader.Height * InfoHeader.Width];
+    dados[i + 2 * InfoHeader.Height * InfoHeader.Width] -= DC[2];
+    DC[2] = aux[2];
+
+    for(int j = 1; j < 64; j++){
+      AC[0] = dados[i + j];
+      dados[i+j] -= aux[0];
+      aux[0] = AC[0];
+
+      AC[1] = dados[i + j + InfoHeader.Height * InfoHeader.Width];
+      dados[i + j + InfoHeader.Height * InfoHeader.Width] -= aux[1];
+      aux[1] = AC[1];
+
+      AC[2] = dados[i + j + InfoHeader.Height * InfoHeader.Width];
+      dados[i + j + 2 * InfoHeader.Height * InfoHeader.Width] -= aux[2];
+      aux[2] = AC[2];
+    }
+  }
+}
+
+void icod_diff_JPEG(int* dados, BITMAPINFOHEADER InfoHeader)
+{
+  //Utiliza-se um vetor de 3 elementos para fazer as operaçãos de RGB dentro de um mesmo laço
+  int DC[3] = {0,0,0};
+  int AC[3] = {0,0,0};
+  for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
+    dados[i] += DC[0];
+    DC[0] = dados[i];
+    AC[0] = DC[0];
+
+    dados[i + InfoHeader.Height * InfoHeader.Width] += DC[1];
+    DC[1] = dados[i + InfoHeader.Height * InfoHeader.Width];
+    AC[1] = DC[1];
+
+    dados[i + 2 * InfoHeader.Height * InfoHeader.Width] += DC[2];
+    DC[2] = dados[i + 2 * InfoHeader.Height * InfoHeader.Width];
+    AC[2] = DC[2];
+    
+    for(int j = 1; j < 64; j++){
+      dados[i+j] += AC[0];
+      AC[0] = dados[i + j];
+
+      dados[i + j + InfoHeader.Height * InfoHeader.Width] -= AC[1];
+      AC[1] = dados[i + j + InfoHeader.Height * InfoHeader.Width];
+
+      dados[i + j + 2 * InfoHeader.Height * InfoHeader.Width] -= AC[2];
+      AC[2] = dados[i + j + InfoHeader.Height * InfoHeader.Width];
     }
   }
 }
