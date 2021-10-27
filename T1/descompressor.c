@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
   TABELA *TabCodigos;
   int i;
          
-  if(!(input = fopen("out.bin", "rb"))){
+  if(!(input = fopen(argv[1], "rb"))){
           printf("Error: could not open input file.\n" );
           exit(1);
   }

@@ -2,9 +2,10 @@
 #define _COD_DIF_
 #include "bitmap.h"
 
+/*Struct que armazena as informações para codificação Huffman*/
 typedef struct
 {
-    int codigo;   //era unsigned mas mudei
+    int codigo;
     char tamanho;
 
 }TABELA;

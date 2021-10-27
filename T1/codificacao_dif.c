@@ -10,6 +10,12 @@ const unsigned char TabPrefixos[9]={2,   3,   4,   0,  5,   6,   14,   30, 	62};
 const char *Palavras[9] = {"010", "011", "100", "00", "101", "110", "1110", "11110", "111110"};
 const unsigned char TamPrefixos[9]={3,   3,   3,   2,  3,   3,   4,	5,  	6};
 
+/* CodDiferencial() -> Função principal da codificação por diferença
+*PIXEL *Image -> Recebe uma struct PIXEL com os dados de leitura do .bmp a ser comprimido
+*int altura -> Recebe a altura da imagem .bmp lida
+*int largura -> Recebe a largura da imagem .bmp lida
+*Return t -> Retorna uma struct do tipo TABELA
+*/
 TABELA *CodDiferencial(PIXEL *Image, int altura, int largura){
 	int tam = altura * largura;
 	TABELA *t = calloc(tam*3, sizeof(TABELA));
@@ -39,6 +45,12 @@ TABELA *CodDiferencial(PIXEL *Image, int altura, int largura){
 	return t;
 }
 
+/* Decod_GEPJ() -> Função principal da decodificação com perdas utilizada
+*TABELA *TabCodigos ->Recebe um struct TABELA com os dados do .bin a ser descomprimidos
+*int altura -> Recebe a altura da imagem .bmp lida
+*int largura -> Recebe a largura da imagem .bmp lida
+*Return i -> Retorna uma struct do tipo PIXEL
+*/
 PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura){
 	int tam = altura * largura;
 	PIXEL *i = calloc(tam, sizeof(PIXEL));
@@ -78,7 +90,13 @@ void arquivoTeste(unsigned char caracter, FILE* teste){
 
 }
 
-
+/* escreve() ->
+*unsigned char* palavra ->
+*int tamanhoHuff -> 
+*FILE* p ->
+*FILE* teste ->
+*Return buffer[0] ->
+*/
 unsigned char escreve(unsigned char* palavra, int tamanhoHuff, FILE* p, FILE* teste)
 {
 
@@ -120,6 +138,10 @@ unsigned char escreve(unsigned char* palavra, int tamanhoHuff, FILE* p, FILE* te
 
 }
 
+/* flush() ->
+*unsigned char* buffer ->
+*FILE* p ->
+*/
 void flush(unsigned char* buffer, FILE* p){
 	while(BitAtual < 8)
 	{
@@ -129,6 +151,10 @@ void flush(unsigned char* buffer, FILE* p){
 	fwrite(&buffer, 1, 1, p);
 }
 
+/* onverterIntEmChar() -> 
+*int n ->
+*Return bin ->
+*/
 char* converterIntEmChar(int n){
     char* bin = (char*)calloc(9, sizeof(char));
     int nMod = abs(n);
@@ -151,6 +177,11 @@ char* converterIntEmChar(int n){
     return bin;
 }
 
+/* montaPalavra() ->
+*int tamanhoHuff ->
+*int codigo ->
+*Return buffer ->
+*/
 unsigned char* montaPalavra(int tamanhoHuff, int codigo){
 	unsigned char* buffer = (unsigned char*)calloc(15, sizeof(unsigned char));
 	char* codigoBinario = (char*)calloc(8, sizeof(char));
@@ -184,6 +215,11 @@ unsigned char* montaPalavra(int tamanhoHuff, int codigo){
 
 }
 
+/* GravaBit() ->
+*TABELA *TabCodigos ->
+*int tam ->
+*FILE *p ->
+*/
 void GravaBit(TABELA *TabCodigos, int tam, FILE *p, FILE* teste){
 	int a = 0;
 	unsigned char remanescente[1];
@@ -194,4 +230,73 @@ void GravaBit(TABELA *TabCodigos, int tam, FILE *p, FILE* teste){
 	}
 	flush(remanescente, p);
 
+}
+
+void decodHuffman(TABELA* t, unsigned char byte){
+    unsigned char buffer;
+    int tamHuffman;
+
+    buffer = byte & 0xC0;           //Armazena os dois primeiros digitos
+
+    while(1){
+        if(buffer == 0){
+            tamHuffman = 3;
+            break;
+        }
+
+        buffer = byte & 0xE0;       //Armazena os tres primeiros digitos
+        if(buffer == 0x40){         //010
+            tamHuffman = 0;
+            break;
+        }else if(buffer == 0x60){   //011
+            tamHuffman = 1;
+            break;
+        }else if(buffer == 0x80){   //100
+            tamHuffman = 2;
+            break;
+        }else if(buffer == 0xA0){   //101
+            tamHuffman = 4;
+            break;
+        }else if(buffer == 0xC0){   //110
+            tamHuffman = 5;
+            break;
+        }
+
+        buffer = byte & 0xF0;       //Armazena os 4 primeiros digitos
+
+        if(buffer == 0xE0){
+            tamHuffman = 6;
+            break;
+        }
+
+        buffer = byte & 0xF8;   //Armazena os 5 primeiros digitos
+
+        if(buffer == 0xF0){     //11110
+            tamHuffman = 7;
+            break;
+        }
+
+        buffer = byte & 0xFC;   //Armazena os 6 primeiros digitos
+
+        if(buffer == 0xF8){     //111110
+            tamHuffman = 8;
+            break;
+        }
+
+    }
+
+}
+
+TABELA* lerHuffman(FILE* input){
+    TABELA* t;
+    unsigned char buffer;
+
+    fseek(input, 0x37, SEEK_SET);    //Pula o header do arquivo
+
+    while(buffer != EOF){
+        fread(&buffer, sizeof(unsigned char), 1, input);
+        decodHuffman(t, buffer);
+    }
+
+    return t;
 }
