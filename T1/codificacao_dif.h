@@ -1,3 +1,6 @@
+//Trabalho 1 - Multimídia e Hipermídia
+//Leonardo Prado Dias - N°USP: 10684642
+//Renan Peres Martins - N°USP: 10716612
 #ifndef _COD_DIF_
 #define _COD_DIF_
 #include "bitmap.h"
@@ -10,10 +13,14 @@ typedef struct
 
 }TABELA;
 
+/* CodDiferencial() -> Função principal da codificação por diferença*/
 TABELA *CodDiferencial(PIXEL *Image, int altura, int largura);
+
+/* Decod_GEPJ() -> Função principal da decodificação com perdas utilizada*/
 PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura);
-void GravaBit(TABELA *TabCodigos, int tam, FILE *p, FILE *teste);
-void TonsCinza(PIXEL *Image, int tam, FILE *input);
+
+/* GravaBit() -> Função que converte a lista de códigos em bits e escreve o .bin*/
+void GravaBit(TABELA *TabCodigos, int tam, FILE *p);
 
 unsigned char buffer[1];
 

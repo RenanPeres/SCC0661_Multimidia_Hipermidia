@@ -1,3 +1,6 @@
+//Trabalho 1 - Multimídia e Hipermídia
+//Leonardo Prado Dias - N°USP: 10684642
+//Renan Peres Martins - N°USP: 10716612
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -67,67 +70,24 @@ PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura){
 	return i;
 }
 
-void arquivoTeste(unsigned char caracter, FILE* teste){
-    unsigned char* convertido = (unsigned char*)malloc(9);
-    char palavra[8];
-
-	for(int i=0;i<8;i++)
-	{
-		palavra[i]=caracter%2;
-		caracter=caracter/2;
-	}
-
-
-    for(int i = 0; i < 8; i++){
-        if(palavra[i] == 0)
-            convertido[i] = '0';
-        else
-            convertido[i] = '1';
-    }
-    convertido[8] = '\0';
-    fprintf(teste, "%s\n", convertido);
-    return;
-
-}
-
-/* escreve() ->
-*unsigned char* palavra ->
-*int tamanhoHuff -> 
-*FILE* p ->
-*FILE* teste ->
-*Return buffer[0] ->
+/* escreve() -> Escreve a palavra no arquivo .bin
+*unsigned char* palavra -> Palavra a ser escrita no .bin
+*int tamanhoHuff -> Tamanho do código pela codificação Huffman
+*FILE* p -> Ponteiro para o arquivo de saída .bin
+*Return buffer[0] -> 
 */
-unsigned char escreve(unsigned char* palavra, int tamanhoHuff, FILE* p, FILE* teste)
+unsigned char escreve(unsigned char* palavra, int tamanhoHuff, FILE* p)
 {
 
-/*	for(int i = 0; i < TamPrefixos[tamanhoHuff]+tamanhoHuff; i++){
-        buffer[0] <<= 1;
-
-    	if(palavra[i] == 1){
-        	buffer[0] |= 1;
-    	}
-
-    	BitAtual++;
-
-    	if(BitAtual == 8){
-        	fwrite(buffer, 1, 1, p);
-        	arquivoTeste(buffer[0], teste);
-        	BitAtual = 0;
-        	buffer[0] = 0;
-    	}
-
-	}*/
-
 	for(int i = 0; i < TamPrefixos[tamanhoHuff]+tamanhoHuff; i++){
-        buffer[0] >>= 1;
+        buffer[0] <<= 1;
         if(palavra[i] == 1){
-            buffer[0] |= 0x80;
+            buffer[0] |= 0x1;
         }
         BitAtual++;
 
             if(BitAtual == 8){
                 fwrite(buffer, 1, 1, p);
-                arquivoTeste(buffer[0], teste);
                 BitAtual = 0;
                 buffer[0] = 0;
     	}
@@ -138,22 +98,22 @@ unsigned char escreve(unsigned char* palavra, int tamanhoHuff, FILE* p, FILE* te
 
 }
 
-/* flush() ->
-*unsigned char* buffer ->
-*FILE* p ->
+/* flush() -> Completa o bits necessário para completar um byte
+*unsigned char* buffer -> Bits restantes para serem escritos
+*FILE* p -> Arquivo de saída .bin
 */
 void flush(unsigned char* buffer, FILE* p){
 	while(BitAtual < 8)
 	{
-    	buffer[0] >>= 1;
+    	buffer[0] <<= 1;
     	BitAtual++;
 	}
 	fwrite(&buffer, 1, 1, p);
 }
 
-/* onverterIntEmChar() -> 
-*int n ->
-*Return bin ->
+/* onverterIntEmChar() -> Função que converte um valor inteiro em sua representação em vetor de char
+*int n -> Valor do código a ser convertido
+*Return bin -> Retorna a sequência de char referente a n
 */
 char* converterIntEmChar(int n){
     char* bin = (char*)calloc(9, sizeof(char));
@@ -177,10 +137,10 @@ char* converterIntEmChar(int n){
     return bin;
 }
 
-/* montaPalavra() ->
-*int tamanhoHuff ->
-*int codigo ->
-*Return buffer ->
+/* montaPalavra() -> Monta a palavra para escrever em arquivo
+*int tamanhoHuff -> Tamanho do código
+*int codigo -> Código
+*Return buffer -> Retorna o valor de 'sobra' do bit
 */
 unsigned char* montaPalavra(int tamanhoHuff, int codigo){
 	unsigned char* buffer = (unsigned char*)calloc(15, sizeof(unsigned char));
@@ -215,18 +175,18 @@ unsigned char* montaPalavra(int tamanhoHuff, int codigo){
 
 }
 
-/* GravaBit() ->
-*TABELA *TabCodigos ->
-*int tam ->
-*FILE *p ->
+/* GravaBit() -> Função que converte a lista de códigos em bits e escreve o .bin
+*TABELA *TabCodigos -> Ponteiro para struct TABELA que possui as informações auxiliares dos códigos
+*int tam -> Tamanho de pixel do .bmp
+*FILE *p -> Ponteiro para o arquivo de saida .bin
 */
-void GravaBit(TABELA *TabCodigos, int tam, FILE *p, FILE* teste){
+void GravaBit(TABELA *TabCodigos, int tam, FILE *p){
 	int a = 0;
 	unsigned char remanescente[1];
     unsigned char* palavra = (unsigned char*)malloc(15);
 	for(int i = 0; i < 3*tam; i++){
     	palavra = montaPalavra(TabCodigos[i].tamanho, TabCodigos[i].codigo);
-    	remanescente[0] = escreve(palavra, TabCodigos[i].tamanho, p, teste);
+    	remanescente[0] = escreve(palavra, TabCodigos[i].tamanho, p);
 	}
 	flush(remanescente, p);
 

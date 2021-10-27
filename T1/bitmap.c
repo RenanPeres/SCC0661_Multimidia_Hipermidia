@@ -1,3 +1,6 @@
+//Trabalho 1 - Multimídia e Hipermídia
+//Leonardo Prado Dias - N°USP: 10684642
+//Renan Peres Martins - N°USP: 10716612
 #include <stdio.h>
 #include <stdlib.h>
 #include "bitmap.h"

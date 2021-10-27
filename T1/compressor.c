@@ -1,9 +1,9 @@
+//Trabalho 1 - Multimídia e Hipermídia
+//Leonardo Prado Dias - N°USP: 10684642
+//Renan Peres Martins - N°USP: 10716612
 #include <stdio.h>
 #include <stdlib.h>
 #include "codificacao_GEPJ.h"
-
-void compara();
-void charToBit(char ch);
 
 int main(int argc, char *argv[])
 {
@@ -13,12 +13,7 @@ int main(int argc, char *argv[])
   PIXEL *Image;
   TABELA *TabCodigos;
   int i;
-
-  if(!(teste = fopen("teste.txt", "w"))){
-          printf("Error: could not open input file.\n" );
-          exit(1);
-  }
-         
+  
   if(!(input = fopen(argv[1], "rb"))){
           printf("Error: could not open input file.\n" );
           exit(1);
@@ -57,36 +52,10 @@ int main(int argc, char *argv[])
       TabCodigos = Cod_GEPJ(Image, InfoHeader);
       i = 0;
     }else if(i != 0) printf("Opção inválida! Tente novamente!");
-  }GravaBit(TabCodigos, (InfoHeader.Height * InfoHeader.Width), output, teste);
+  }GravaBit(TabCodigos, (InfoHeader.Height * InfoHeader.Width), output);
   
-  fclose(teste);
   fclose(input);
   fclose(output);
-  //compara();
+
   return 0;
-}
-
-void compara()
-{
-    FILE *output;
-    BITMAPFILEHEADER FileHeader;       /* File header */
-    BITMAPINFOHEADER InfoHeader;       /* Info header */
-    char c;
-    if(!(output = fopen("out.bin", "rb"))){
-          printf("Error: could not open ""out.bin"" file." );
-          exit(1);
-  }loadBMPHeaders (output, &FileHeader, &InfoHeader);
-  for(int i = 0; i < 18; i++){
-    fread(&c, sizeof(char), 1, output);
-    charToBit(c);
-  }
-}
-
-void charToBit(char ch)
-{
-    for (int i = 7; i >= 0; --i)
-    {
-        putchar( (ch & (1 << i)) ? '1' : '0' );
-    }
-    putchar('\n');
 }
