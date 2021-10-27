@@ -1,11 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "bitmap.h"
+#include "codificacao_dif.h"
+#include "codificacao_GEPJ.h"
 
 
 int main(int argc, char *argv[])
 {
-  FILE *input, *cinza, *output;
+  FILE *input, *output;
   int i;
   unsigned char *v, modo;
   
@@ -22,7 +24,8 @@ int main(int argc, char *argv[])
   loadBMPHeaders (input, &FileHeader, &InfoHeader);
   
   Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));
-  
+  TABELA *TabCodigos;
+
   loadBMPImage(input, InfoHeader, Image);
                                
 
@@ -34,7 +37,8 @@ int main(int argc, char *argv[])
   fseek(input, 0, SEEK_SET);
   for(i=0; i<54; i++)
            fputc(fgetc(input), output);
-  fclose(input);
+
+  
 
   printf("\nDefina o método de compressao:\n\n");
   printf("Sem perdas (Compressao por diferença + Huffman) -> 1\n");
@@ -44,14 +48,16 @@ int main(int argc, char *argv[])
     printf("Sua escolha: ");
     modo = getc(stdin);
     if(modo == '1'){ 
-    //  cod_dif();
+    //  decod_dif();
       break;
     }else if(modo == '2'){
-    //  cod_jpeg();
+      decod_jpeg(Image, InfoHeader, TabCodigos);
     }else if(modo =='0') break;
     else printf("Opção inválida! Tente novamente!");
-  }
+  }GravaBit(TabCodigos, (InfoHeader.Height * InfoHeader.Width), output, teste);
+  
 
+  fclose(input);
   fclose(output);
   return 0;
 }
