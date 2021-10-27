@@ -13,11 +13,8 @@ void loadBMPHeaders (FILE *fp, BITMAPFILEHEADER *FileHeader, BITMAPINFOHEADER *I
       fclose(fp);
       return;
     }
-    
-    printHeaders(FileHeader, InfoHeader);
          
 }
-
 
 void leituraHeader(FILE *F, BITMAPFILEHEADER *H){
      fread(&H->Type,sizeof (unsigned short int),1,F);

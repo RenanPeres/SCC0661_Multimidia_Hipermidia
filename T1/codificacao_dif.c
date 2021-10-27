@@ -2,84 +2,13 @@
 #include <stdlib.h>
 #include <math.h>
 #include "codificacao_dif.h"
-#include "bitmap.h"
 
-int main(int argc, char *argv[])
-{
-  FILE *input, *cinza, *output;
-  int i;
-  unsigned char *v;
-FILE* teste;
-teste = fopen("teste.txt", "w");
-  FILE *fp;
-  BITMAPFILEHEADER FileHeader;   	/* File header */
-  BITMAPINFOHEADER InfoHeader;   	/* Info header */
-  PIXEL *Image;
-  TABELA *TabCodigos;
-
-  if(!(input = fopen(argv[1], "rb"))){
-      	printf("Error: could not open input file." );
-      	exit(1);
-  }
-  loadBMPHeaders (input, &FileHeader, &InfoHeader);
-
-  Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));
-
-  loadBMPImage(input, InfoHeader, Image);
-
-  TonsCinza(Image, (InfoHeader.Width * InfoHeader.Height), input);
-
-
-  if(!(output = fopen("out.bin", "wb"))){
-      	printf("Error: could not open ""out.bin"" file." );
-      	exit(1);
-  }
-
-  fseek(input, 0, SEEK_SET);
-  for(i=0; i<54; i++)
-       	fputc(fgetc(input), output);
-  fclose(input);
-
-  TabCodigos = CodDiferencial(Image, InfoHeader.Height, InfoHeader.Width);
-  GravaBit(TabCodigos, (InfoHeader.Height * InfoHeader.Width), output, teste);
-
-  fclose(output);
-
-  return (0);
-}
-
-void TonsCinza(PIXEL *Image, int tam, FILE *input)
-{
-  FILE *cinza;
-
-  for (int i=0;i< tam; i++){
- 	Image[i].R = Image[i].G;
- 	Image[i].B = Image[i].G;
-  }
-
-  if(!(cinza = fopen("cinza.bmp", "wb"))){
-      	printf("Error: could not open ""cinza"" file." );
-      	exit(1);
-  }
-
-  fseek(input, 0, SEEK_SET);
-
-  for(int i=0; i<54; i++)
-       	fputc(fgetc(input), cinza);
-
-
-  for (int i=0; i < tam; i++)
-  {
- 	fputc(Image[i].B, cinza);
- 	fputc(Image[i].G, cinza);
- 	fputc(Image[i].R, cinza);
-
-  }
-
-  fclose (cinza);
-
-  return;
-}
+int BitAtual = 0;
+/* índice do vetor = categoria = qtd de bits; ex. categoria 1 tem 1 bit
+                                	010, 011, 100, 00, 101, 110, 1110, 11110   111110*/
+const unsigned char TabPrefixos[9]={2,   3,   4,   0,  5,   6,   14,   30, 	62};
+const char *Palavras[9] = {"010", "011", "100", "00", "101", "110", "1110", "11110", "111110"};
+const unsigned char TamPrefixos[9]={3,   3,   3,   2,  3,   3,   4,	5,  	6};
 
 TABELA *CodDiferencial(PIXEL *Image, int altura, int largura){
 	int tam = altura * largura;
@@ -108,6 +37,22 @@ TABELA *CodDiferencial(PIXEL *Image, int altura, int largura){
 	}
 
 	return t;
+}
+
+PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura){
+	int tam = altura * largura;
+	PIXEL *i = calloc(tam, sizeof(PIXEL));
+
+	i[0].R = TabCodigos[0].codigo;
+    i[0].G = TabCodigos[tam].codigo;
+    i[0].B = TabCodigos[tam * 2].codigo;
+	for(int j = 1; j < tam; j++){
+        i[j].R = i[j-1].R + TabCodigos[j].codigo;
+        i[j].G = i[j-1].G + TabCodigos[j+tam].codigo;
+        i[j].B = i[j-1].B + TabCodigos[j+2*tam].codigo;
+	}
+
+	return i;
 }
 
 void arquivoTeste(unsigned char caracter, FILE* teste){
@@ -248,8 +193,5 @@ void GravaBit(TABELA *TabCodigos, int tam, FILE *p, FILE* teste){
     	remanescente[0] = escreve(palavra, TabCodigos[i].tamanho, p, teste);
 	}
 	flush(remanescente, p);
-
-    fclose(teste);
-	fclose(p);
 
 }
