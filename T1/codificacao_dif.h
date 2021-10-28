@@ -22,6 +22,12 @@ PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura);
 /* GravaBit() -> Função que converte a lista de códigos em bits e escreve o .bin*/
 void GravaBit(TABELA *TabCodigos, int tam, FILE *p);
 
+TABELA *LeituraBin(TABELA *TabCodigos, FILE *p);
+
+int read_bit(FILE* f);
+
+int TamHuffman(FILE* p, int ini);
+
 unsigned char buffer[1];
 
 

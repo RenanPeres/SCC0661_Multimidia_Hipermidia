@@ -7,7 +7,7 @@
 
 int main(int argc, char *argv[])
 {
-  FILE *input, *output, *teste;
+  FILE *input, *output;
   BITMAPFILEHEADER FileHeader;
   BITMAPINFOHEADER InfoHeader;
   PIXEL *Image;
@@ -20,7 +20,6 @@ int main(int argc, char *argv[])
   }
   
   loadBMPHeaders (input, &FileHeader, &InfoHeader);
-  printf("Bitmap lido:\n");
   printHeaders(&FileHeader, &InfoHeader);
   
   Image = (PIXEL *) malloc((InfoHeader.Width * InfoHeader.Height) * sizeof(PIXEL));

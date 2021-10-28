@@ -48,24 +48,25 @@ TABELA *Cod_GEPJ(PIXEL *Image, BITMAPINFOHEADER InfoHeader)
   int matrix[64];
   TABELA *Tabela;
   
+
   //Para os valores de B
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
-    for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].B;
-    dct(matrix);
+    for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].R;
+    //dct(matrix);
     quant(matrix);
-    for(int j = 0; j < 64; j++) Image[i+j].B = matrix[ZZ_Matrix[j]];//Ordenação ZZ
+    for(int j = 0; j < 64; j++) Image[i+j].R = matrix[ZZ_Matrix[j]];
   }//Para os valores de G
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
     for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].G;
-    dct(matrix);
+    //dct(matrix);
     quant(matrix);
-    for(int j = 0; j < 64; j++) Image[i + j].G = matrix[ZZ_Matrix[j]];//Ordenação ZZ
+    for(int j = 0; j < 64; j++) Image[i + j].G = matrix[ZZ_Matrix[j]];
   }//Para os valores de R
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
-    for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].R;
-    dct(matrix);
+    for(int j = 0; j < 64; j++) matrix[j] = Image[i+j].B;
+    //dct(matrix);
     quant(matrix);
-    for(int j = 0; j < 64; j++) Image[i + j].R = matrix[ZZ_Matrix[j]];//Ordenação ZZ
+    for(int j = 0; j < 64; j++) Image[i + j].B = matrix[ZZ_Matrix[j]];
   }Tabela = CodDiferencial(Image, InfoHeader.Height, InfoHeader.Width);
 
   return Tabela;
@@ -84,22 +85,22 @@ PIXEL *Decod_GEPJ(TABELA *TabCodigos, BITMAPINFOHEADER InfoHeader)
   Image = DecodDiferencial(TabCodigos,InfoHeader.Height,InfoHeader.Width);
   //Para os valores de B
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
-    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i+j].B;//Ordenação ZZ
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i+j].R;
     iquant(matrix);
-    idct(matrix);
-    for(int j = 0; j < 64; j++) Image[i+j].B = matrix[j];
+    //idct(matrix);
+    for(int j = 0; j < 64; j++) Image[i+j].R = matrix[j];
   }//Para os valores de G
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
-    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i + j].G;//Ordenação ZZ
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i + j].G;
     iquant(matrix);
-    idct(matrix);
+    //idct(matrix);
     for(int j = 0; j < 64; j++) Image[i+j].G = matrix[j];
   }//Para os valores de R
   for(int i = 0; i < InfoHeader.Height * InfoHeader.Width; i += 64){
-    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i + j].R;//Ordenação ZZ
+    for(int j = 0; j < 64; j++) matrix[ZZ_Matrix[j]] = Image[i + j].B;
     iquant(matrix);
-    idct(matrix);
-    for(int j = 0; j < 64; j++) Image[i+j].R = matrix[j];
+    //idct(matrix);
+    for(int j = 0; j < 64; j++) Image[i+j].B = matrix[j];
   }
 
   return Image;

@@ -59,12 +59,12 @@ PIXEL *DecodDiferencial(TABELA *TabCodigos, int altura, int largura){
 	PIXEL *i = calloc(tam, sizeof(PIXEL));
 
 	i[0].R = TabCodigos[0].codigo;
-    i[0].G = TabCodigos[tam].codigo;
-    i[0].B = TabCodigos[tam * 2].codigo;
+  i[0].G = TabCodigos[tam].codigo;
+  i[0].B = TabCodigos[tam * 2].codigo;
 	for(int j = 1; j < tam; j++){
-        i[j].R = i[j-1].R + TabCodigos[j].codigo;
-        i[j].G = i[j-1].G + TabCodigos[j+tam].codigo;
-        i[j].B = i[j-1].B + TabCodigos[j+2*tam].codigo;
+        i[j].R = (i[j-1].R + TabCodigos[j].codigo);
+        i[j].G = (i[j-1].G + TabCodigos[j+tam].codigo);
+        i[j].B = (i[j-1].B + TabCodigos[j+2*tam].codigo);
 	}
 
 	return i;
@@ -168,7 +168,6 @@ unsigned char* montaPalavra(int tamanhoHuff, int codigo){
         if(codigoBinario[i - TamPrefixos[tamanhoHuff]] != '\0')
             buffer[i] = codigoBinario[i - TamPrefixos[tamanhoHuff]];
         else
-
 	}*/
 
 	return buffer;
@@ -192,71 +191,78 @@ void GravaBit(TABELA *TabCodigos, int tam, FILE *p){
 
 }
 
-void decodHuffman(TABELA* t, unsigned char byte){
-    unsigned char buffer;
-    int tamHuffman;
-
-    buffer = byte & 0xC0;           //Armazena os dois primeiros digitos
-
-    while(1){
-        if(buffer == 0){
-            tamHuffman = 3;
-            break;
-        }
-
-        buffer = byte & 0xE0;       //Armazena os tres primeiros digitos
-        if(buffer == 0x40){         //010
-            tamHuffman = 0;
-            break;
-        }else if(buffer == 0x60){   //011
-            tamHuffman = 1;
-            break;
-        }else if(buffer == 0x80){   //100
-            tamHuffman = 2;
-            break;
-        }else if(buffer == 0xA0){   //101
-            tamHuffman = 4;
-            break;
-        }else if(buffer == 0xC0){   //110
-            tamHuffman = 5;
-            break;
-        }
-
-        buffer = byte & 0xF0;       //Armazena os 4 primeiros digitos
-
-        if(buffer == 0xE0){
-            tamHuffman = 6;
-            break;
-        }
-
-        buffer = byte & 0xF8;   //Armazena os 5 primeiros digitos
-
-        if(buffer == 0xF0){     //11110
-            tamHuffman = 7;
-            break;
-        }
-
-        buffer = byte & 0xFC;   //Armazena os 6 primeiros digitos
-
-        if(buffer == 0xF8){     //111110
-            tamHuffman = 8;
-            break;
-        }
-
+TABELA *LeituraBin(TABELA *TabCodigos, FILE *p)
+{
+    int codHuffman;
+    int i = 0;
+    int tamanho;
+		fseek(p, 55, SEEK_SET);
+    codHuffman = read_bit(p);		
+    while(codHuffman != EOF){
+        tamanho = TamHuffman(p, codHuffman);
+				if(tamanho != 0){
+					codHuffman = read_bit(p);
+					if(codHuffman == 1){
+						if(tamanho == 1) TabCodigos[i].codigo = 1;
+						else if(tamanho == 2) TabCodigos[i].codigo = codHuffman*2+read_bit(p);
+						else if(tamanho == 3) TabCodigos[i].codigo = codHuffman*4+read_bit(p)*2+read_bit(p);
+						else if(tamanho == 4) TabCodigos[i].codigo = codHuffman*8+read_bit(p)*4+read_bit(p)*2+read_bit(p);
+						else if(tamanho == 5) TabCodigos[i].codigo = codHuffman*16+read_bit(p)*8+read_bit(p)*4+read_bit(p)*2+read_bit(p);
+						else if(tamanho == 6) TabCodigos[i].codigo = codHuffman*32+read_bit(p)*16+read_bit(p)*8+read_bit(p)*4+read_bit(p)*2+read_bit(p);
+						else if(tamanho == 7) TabCodigos[i].codigo = codHuffman*64+read_bit(p)*32+read_bit(p)*16+read_bit(p)*8+read_bit(p)*4+read_bit(p)*2+read_bit(p);
+						else TabCodigos[i].codigo = codHuffman*128+read_bit(p)*64+read_bit(p)*32+read_bit(p)*16+read_bit(p)*8+read_bit(p)*4+read_bit(p)*2+read_bit(p);
+					}else{if(tamanho == 1) TabCodigos[i].codigo = -1;
+						else if(tamanho == 2) TabCodigos[i].codigo = -1*((!codHuffman)*2+(read_bit(p)==0));
+						else if(tamanho == 3) TabCodigos[i].codigo = -1*((!codHuffman)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+						else if(tamanho == 4) TabCodigos[i].codigo = -1*((!codHuffman)*8+(read_bit(p)==0)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+						else if(tamanho == 5) TabCodigos[i].codigo = -1*((!codHuffman)*16+(read_bit(p)==0)*8+(read_bit(p)==0)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+						else if(tamanho == 6) TabCodigos[i].codigo = -1*((!codHuffman)*32+(read_bit(p)==0)*16+(read_bit(p)==0)*8+(read_bit(p)==0)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+						else if(tamanho == 7) TabCodigos[i].codigo = -1*((!codHuffman)*64+(read_bit(p)==0)*32+(read_bit(p)==0)*16+(read_bit(p)==0)*8+(read_bit(p)==0)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+						else TabCodigos[i].codigo = -1*((!codHuffman)*128+(read_bit(p)==0)*64+(read_bit(p)==0)*32+(read_bit(p)==0)*16+(read_bit(p)==0)*8+(read_bit(p)==0)*4+(read_bit(p)==0)*2+(read_bit(p)==0));
+					}
+				}else TabCodigos[i].codigo = 0;
+				i++;
+        codHuffman = read_bit(p);
     }
-
+    return TabCodigos;
 }
 
-TABELA* lerHuffman(FILE* input){
-    TABELA* t;
-    unsigned char buffer;
+int read_bit(FILE* f){
+	static int calls=0;
+	static int acc;
+	static int first = 1;
+	if(first==1){
+		acc=fgetc(f);
+		first=0;
+	}
+	if(acc==EOF){
+		return EOF;
+	}
+	if(calls==8){
+		acc=fgetc(f);
+		if(acc==EOF){
+			return EOF;
+		}
+		calls=0;
+	}
+	int offset = 7 - calls;
+	int mask = 1 << offset; 
+	int bit = ((acc & mask)>>offset);	
+	calls++;
+	return bit;
+}
 
-    fseek(input, 0x37, SEEK_SET);    //Pula o header do arquivo
-
-    while(buffer != EOF){
-        fread(&buffer, sizeof(unsigned char), 1, input);
-        decodHuffman(t, buffer);
-    }
-
-    return t;
+int TamHuffman(FILE* p, int ini)
+{
+    if(ini == 0){//0x
+        if(read_bit(p) == 0) return 3;//00
+        if(read_bit(p) == 0) return 0;//010
+        return 1;//011
+    }if(read_bit(p)==0){//10x
+        if(read_bit(p)==0) return 2;//100
+        return 4;//101
+    }if(read_bit(p)==0) return 5;//110
+    if(read_bit(p)==0) return 6;//1110
+    if(read_bit(p)==0) return 7;//11110
+    if(read_bit(p)==0) return 8;//111110
 }

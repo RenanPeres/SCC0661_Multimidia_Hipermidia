@@ -2,13 +2,19 @@
 #Leonardo Prado Dias - N°USP: 10684642
 #Renan Peres Martins - N°USP: 10716612
 
-all: comprimir descomprimir
+all: comprimir descomprimir demonstrar
+
+demonstrar: demonstracao.o bitmap.o codificacao_dif.o codificacao_GEPJ.o
+	gcc -o demonstrar demonstracao.o bitmap.o codificacao_dif.o codificacao_GEPJ.o -lm
 
 comprimir: compressor.o bitmap.o codificacao_dif.o codificacao_GEPJ.o
 	gcc -o comprimir compressor.o bitmap.o codificacao_dif.o codificacao_GEPJ.o -lm
 
 descomprimir: descompressor.o bitmap.o codificacao_dif.o codificacao_GEPJ.o
 	gcc -o descomprimir descompressor.o bitmap.o codificacao_dif.o codificacao_GEPJ.o -lm
+
+demonstracao.o: demonstracao.c codificacao_GEPJ.h
+	gcc -o demonstracao.o demonstracao.c -c
 
 compressor.o: compressor.c codificacao_GEPJ.h
 	gcc -o compressor.o compressor.c -c
