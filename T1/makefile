@@ -32,4 +32,4 @@ codificacao_GEPJ.o: codificacao_GEPJ.c codificacao_GEPJ.h
 	gcc -o codificacao_GEPJ.o codificacao_GEPJ.c -c
 
 clean:
-	rm -rf *.o *~ comprimir *~ descomprimir
+	rm -rf *.o *~ comprimir *~ descomprimir *~ demonstrar
